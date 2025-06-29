@@ -9,7 +9,7 @@ CORS(app)
 model = joblib.load("gesture_classifier.pkl")
 labels = joblib.load("gesture_labels.pkl")
 
-CONFIDENCE_THRESHOLD = 0.95
+CONFIDENCE_THRESHOLD = 0.98
 
 from flask import send_from_directory
 import os
