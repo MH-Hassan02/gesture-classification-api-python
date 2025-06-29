@@ -44,8 +44,12 @@ def predict():
 
         print(f"Predicted label: {predicted_label}, confidence: {max_prob:.4f}")
 
+        # Check entropy of the probability distribution
+        entropy = -np.sum(probs * np.log(probs + 1e-10))
+        print(f"Predicted label: {predicted_label}, confidence: {max_prob:.4f}, entropy: {entropy:.4f}")
+
         # Main fix: reject predictions below threshold
-        if max_prob < CONFIDENCE_THRESHOLD:
+        if entropy > 1.0 or max_prob < CONFIDENCE_THRESHOLD:
             return jsonify({"gesture": "Unknown", "confidence": float(max_prob)})
 
         return jsonify({"gesture": predicted_label, "confidence": float(max_prob)})
