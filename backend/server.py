@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
 import numpy as np
-import os
 
 app = Flask(__name__)
 CORS(app)
@@ -10,9 +9,10 @@ CORS(app)
 model = joblib.load("gesture_classifier.pkl")
 labels = joblib.load("gesture_labels.pkl")
 
-CONFIDENCE_THRESHOLD = 0.80
+CONFIDENCE_THRESHOLD = 0.95
 
 from flask import send_from_directory
+import os
 
 @app.route("/type-font/<path:filename>")
 def serve_font(filename):
@@ -37,16 +37,22 @@ def predict():
         flattened = np.array(normalized).flatten().reshape(1, -1)
         print("Flattened shape:", flattened.shape)
         probs = model.predict_proba(flattened)[0]
+        print("Prediction probabilities:", probs)
         max_prob = np.max(probs)
         predicted_idx = np.argmax(probs)
+        predicted_label = labels[predicted_idx]
+
+        print(f"Predicted label: {predicted_label}, confidence: {max_prob:.4f}")
+
+        # Main fix: reject predictions below threshold
         if max_prob < CONFIDENCE_THRESHOLD:
             return jsonify({"gesture": "Unknown", "confidence": float(max_prob)})
-        predicted_label = labels[predicted_idx]
+
         return jsonify({"gesture": predicted_label, "confidence": float(max_prob)})
+
     except Exception as e:
         print("Prediction error:", str(e))
         return jsonify({"gesture": "Error", "message": str(e)}), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=5001)
