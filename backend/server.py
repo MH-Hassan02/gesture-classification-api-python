@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
 import numpy as np
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -12,7 +13,6 @@ labels = joblib.load("gesture_labels.pkl")
 CONFIDENCE_THRESHOLD = 0.80
 
 from flask import send_from_directory
-import os
 
 @app.route("/type-font/<path:filename>")
 def serve_font(filename):
@@ -48,4 +48,5 @@ def predict():
         return jsonify({"gesture": "Error", "message": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001)
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host="0.0.0.0", port=port)
